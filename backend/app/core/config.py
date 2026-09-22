@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     backend_port: int = Field(default=8000, alias="BACKEND_PORT")
     backend_url: str = Field(default="http://localhost:8000", alias="BACKEND_URL")
     cors_origins: str = Field(
-        default="http://localhost:3000,http://127.0.0.1:3000",
+        default="http://localhost:3000,http://127.0.0.1:3000,https://university-schedule-neon.vercel.app",
         alias="CORS_ORIGINS",
     )
 

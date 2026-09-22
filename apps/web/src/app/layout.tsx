@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Geist_Mono, Manrope, Syne } from "next/font/google";
 import { Providers } from "@/components/providers";
 import "./globals.css";
@@ -46,6 +47,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="uz" suppressHydrationWarning>
+      <head>
+        <Script
+          src="https://telegram.org/js/telegram-web-app.js"
+          strategy="beforeInteractive"
+        />
+      </head>
       <body
         className={`${manrope.variable} ${syne.variable} ${geistMono.variable} min-h-dvh antialiased`}
       >

@@ -21,7 +21,9 @@ import {
   buildBypassInitData,
   getTelegramInitData,
   initTelegramWebApp,
+  isInsideTelegramShell,
   telegramBypassEnabled,
+  waitForTelegramInitData,
 } from "@/lib/telegram";
 import { Button } from "@/components/ui/button";
 import { LoadingCards } from "@/components/shared/query-state";
@@ -70,15 +72,27 @@ export function StudentAuthProvider({ children }: { children: React.ReactNode })
       return;
     }
 
-    const initData = getTelegramInitData();
+    // Telegram injects the WebApp script slightly after first paint.
+    const initData =
+      getTelegramInitData() || (await waitForTelegramInitData(4500));
+
     if (initData) {
       try {
         await authenticateWithInitData(initData);
         setReady(true);
         return;
       } catch (err) {
+        const apiHint =
+          err instanceof ApiError
+            ? err.message
+            : "Telegram auth muvaffaqiyatsiz";
+        const offline =
+          err instanceof TypeError ||
+          (err instanceof Error && /fetch|network|Failed/i.test(err.message));
         setBootError(
-          err instanceof ApiError ? err.message : "Telegram auth muvaffaqiyatsiz",
+          offline
+            ? "Serverga ulanib bo‘lmadi. NEXT_PUBLIC_API_URL va backend holatini tekshiring."
+            : apiHint,
         );
         setReady(true);
         return;
@@ -91,9 +105,15 @@ export function StudentAuthProvider({ children }: { children: React.ReactNode })
       return;
     }
 
-    setBootError(
-      "Telegram Mini App ichida oching yoki lokal rivojlantirish uchun NEXT_PUBLIC_TELEGRAM_BYPASS=true qo‘ying.",
-    );
+    if (isInsideTelegramShell()) {
+      setBootError(
+        "Telegram initData topilmadi. Botdagi «📅 Dars jadvalim» WebApp tugmasi orqali qayta oching.",
+      );
+    } else {
+      setBootError(
+        "Telegram Mini App ichida oching (bot → 📅 Dars jadvalim) yoki lokal rivojlantirish uchun NEXT_PUBLIC_TELEGRAM_BYPASS=true qo‘ying.",
+      );
+    }
     setReady(true);
   }, []);
 

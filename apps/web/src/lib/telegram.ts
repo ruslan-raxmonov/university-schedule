@@ -1,35 +1,38 @@
 "use client";
 
+type TelegramThemeParams = Record<string, string | undefined>;
+
 type TelegramWebApp = {
   initData?: string;
-  themeParams?: Record<string, string | undefined>;
+  initDataUnsafe?: { user?: { id?: number; username?: string; first_name?: string } };
+  themeParams?: TelegramThemeParams;
   colorScheme?: string;
   ready: () => void;
   expand: () => void;
 };
 
-function getWebApp(): TelegramWebApp | null {
-  if (typeof window === "undefined") return null;
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require("@twa-dev/sdk");
-    return (mod.default || mod) as TelegramWebApp;
-  } catch {
-    return null;
+declare global {
+  interface Window {
+    Telegram?: { WebApp?: TelegramWebApp };
   }
 }
 
+function getNativeWebApp(): TelegramWebApp | null {
+  if (typeof window === "undefined") return null;
+  return window.Telegram?.WebApp ?? null;
+}
+
 export function isTelegramAvailable() {
-  const WebApp = getWebApp();
   try {
-    return Boolean(WebApp?.initData);
+    const wa = getNativeWebApp();
+    return Boolean(wa?.initData);
   } catch {
     return false;
   }
 }
 
 export function initTelegramWebApp() {
-  const WebApp = getWebApp();
+  const WebApp = getNativeWebApp();
   if (!WebApp) return null;
   try {
     WebApp.ready();
@@ -42,7 +45,7 @@ export function initTelegramWebApp() {
 }
 
 export function applyTelegramTheme() {
-  const WebApp = getWebApp();
+  const WebApp = getNativeWebApp();
   if (!WebApp?.themeParams) return;
   const tp = WebApp.themeParams;
   const root = document.documentElement;
@@ -59,13 +62,27 @@ export function applyTelegramTheme() {
 }
 
 export function getTelegramInitData(): string | null {
-  const WebApp = getWebApp();
   try {
-    if (WebApp?.initData) return WebApp.initData;
+    const fromNative = getNativeWebApp()?.initData;
+    if (fromNative) return fromNative;
   } catch {
     /* ignore */
   }
   return null;
+}
+
+/** Wait until Telegram injects initData (script may load slightly after React mount). */
+export async function waitForTelegramInitData(
+  timeoutMs = 4000,
+): Promise<string | null> {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    initTelegramWebApp();
+    const data = getTelegramInitData();
+    if (data) return data;
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  return getTelegramInitData();
 }
 
 export function buildBypassInitData() {
@@ -85,4 +102,9 @@ export function buildBypassInitData() {
 
 export function telegramBypassEnabled() {
   return process.env.NEXT_PUBLIC_TELEGRAM_BYPASS === "true";
+}
+
+export function isInsideTelegramShell() {
+  if (typeof window === "undefined") return false;
+  return Boolean(window.Telegram?.WebApp);
 }
