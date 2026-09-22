@@ -14,7 +14,7 @@ export class ApiError extends Error {
   }
 }
 
-export type AuthRole = "student" | "admin" | "auto";
+export type AuthRole = "student" | "teacher" | "pending" | "admin" | "auto" | "app";
 
 function getBaseUrl() {
   return (
@@ -24,24 +24,47 @@ function getBaseUrl() {
 
 function readToken(role: AuthRole): string | null {
   if (typeof window === "undefined") return null;
-  if (role === "student") return localStorage.getItem("student_token");
   if (role === "admin") return localStorage.getItem("admin_token");
+  if (role === "student") {
+    return (
+      localStorage.getItem("app_token") ||
+      localStorage.getItem("student_token")
+    );
+  }
+  if (role === "teacher" || role === "pending" || role === "app") {
+    return localStorage.getItem("app_token");
+  }
   return (
     localStorage.getItem("admin_token") ||
+    localStorage.getItem("app_token") ||
     localStorage.getItem("student_token")
   );
 }
 
-export function setStudentToken(token: string | null) {
+export function setAppToken(token: string | null) {
   if (typeof window === "undefined") return;
-  if (token) localStorage.setItem("student_token", token);
-  else localStorage.removeItem("student_token");
+  if (token) {
+    localStorage.setItem("app_token", token);
+    localStorage.removeItem("student_token");
+  } else {
+    localStorage.removeItem("app_token");
+    localStorage.removeItem("student_token");
+  }
+}
+
+/** @deprecated use setAppToken */
+export function setStudentToken(token: string | null) {
+  setAppToken(token);
 }
 
 export function setAdminToken(token: string | null) {
   if (typeof window === "undefined") return;
   if (token) localStorage.setItem("admin_token", token);
   else localStorage.removeItem("admin_token");
+}
+
+export function getAppToken() {
+  return readToken("app");
 }
 
 export function getStudentToken() {
@@ -64,7 +87,9 @@ type RequestOptions = {
 
 function buildUrl(path: string, query?: RequestOptions["query"]) {
   const url = new URL(
-    path.startsWith("http") ? path : `${getBaseUrl()}${path.startsWith("/") ? "" : "/"}${path}`,
+    path.startsWith("http")
+      ? path
+      : `${getBaseUrl()}${path.startsWith("/") ? "" : "/"}${path}`,
   );
   if (query) {
     Object.entries(query).forEach(([key, value]) => {

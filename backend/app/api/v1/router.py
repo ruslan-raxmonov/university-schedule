@@ -6,7 +6,15 @@ from fastapi import APIRouter, Query
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import selectinload
 
-from app.api.deps import CanEditEntities, CanSchedule, CanViewAdmin, CurrentStudent, DbSession
+from app.api.deps import (
+    CanEditEntities,
+    CanSchedule,
+    CanViewAdmin,
+    CurrentStudent,
+    CurrentTeacher,
+    DbSession,
+    PendingClaims,
+)
 from app.core.responses import AppError, ok
 from app.core.security import create_access_token, verify_password
 from app.core.telegram_auth import validate_telegram_init_data
@@ -35,6 +43,9 @@ from app.schemas import (
     GroupCreate,
     GroupOut,
     GroupUpdate,
+    OnboardingStudentRequest,
+    OnboardingTeacherRequest,
+    PendingUserOut,
     NotificationOut,
     RoomCreate,
     RoomOut,
@@ -94,11 +105,86 @@ async def auth_telegram(body: TelegramAuthRequest, db: DbSession):
     last = user.get("last_name") or ""
     full_name = f"{first} {last}".strip() or username or f"User {telegram_id}"
 
-    result = await db.execute(
+    # 1) Already linked teacher?
+    teacher_result = await db.execute(
+        select(Teacher).where(Teacher.telegram_id == telegram_id, Teacher.active.is_(True))
+    )
+    teacher = teacher_result.scalar_one_or_none()
+    if teacher:
+        teacher.telegram_username = username or teacher.telegram_username
+        token = create_access_token(str(teacher.id), token_type="teacher")
+        return ok(
+            TokenResponse(
+                access_token=token,
+                role="teacher",
+                needs_onboarding=False,
+                teacher=TeacherOut.model_validate(teacher),
+            ).model_dump()
+        )
+
+    # 2) Already linked student?
+    student_result = await db.execute(
         select(Student)
         .options(selectinload(Student.group))
-        .where(Student.telegram_id == telegram_id)
+        .where(Student.telegram_id == telegram_id, Student.is_active.is_(True))
     )
+    student = student_result.scalar_one_or_none()
+    if student:
+        student.telegram_username = username or student.telegram_username
+        if full_name:
+            student.full_name = full_name
+        token = create_access_token(str(student.id), token_type="student")
+        return ok(
+            TokenResponse(
+                access_token=token,
+                role="student",
+                needs_onboarding=not bool(student.group_id),
+                student=StudentOut.model_validate(student),
+            ).model_dump()
+        )
+
+    # 3) First-time user → pending onboarding (choose student / teacher)
+    token = create_access_token(
+        str(telegram_id),
+        token_type="pending",
+        extra={
+            "telegram_id": telegram_id,
+            "telegram_username": username,
+            "full_name": full_name,
+        },
+    )
+    return ok(
+        TokenResponse(
+            access_token=token,
+            role="pending",
+            needs_onboarding=True,
+            pending=PendingUserOut(
+                telegram_id=telegram_id,
+                telegram_username=username,
+                full_name=full_name,
+            ),
+        ).model_dump()
+    )
+
+
+@router.post("/auth/onboarding/student")
+async def onboarding_student(
+    body: OnboardingStudentRequest,
+    claims: PendingClaims,
+    db: DbSession,
+):
+    telegram_id = int(claims.get("telegram_id") or claims["sub"])
+    username = claims.get("telegram_username")
+    full_name = claims.get("full_name") or f"User {telegram_id}"
+
+    # Prevent dual role if already a teacher
+    existing_teacher = await db.execute(
+        select(Teacher).where(Teacher.telegram_id == telegram_id)
+    )
+    if existing_teacher.scalar_one_or_none():
+        raise AppError("Bu Telegram akkaunt allaqachon o‘qituvchiga bog‘langan")
+
+    result = await db.execute(select(Student).where(Student.telegram_id == telegram_id))
     student = result.scalar_one_or_none()
     if not student:
         student = Student(
@@ -108,17 +194,61 @@ async def auth_telegram(body: TelegramAuthRequest, db: DbSession):
         )
         db.add(student)
         await db.flush()
-    else:
-        student.telegram_username = username or student.telegram_username
-        if full_name:
-            student.full_name = full_name
 
+    if body.group_id is not None:
+        group = await db.get(Group, body.group_id)
+        if not group or not group.active:
+            raise AppError("Guruh topilmadi", status_code=404)
+        student.group_id = body.group_id
+
+    await db.flush()
+    result = await db.execute(
+        select(Student).options(selectinload(Student.group)).where(Student.id == student.id)
+    )
+    student = result.scalar_one()
     token = create_access_token(str(student.id), token_type="student")
-    await db.refresh(student, attribute_names=["group"])
     return ok(
         TokenResponse(
             access_token=token,
+            role="student",
+            needs_onboarding=not bool(student.group_id),
             student=StudentOut.model_validate(student),
+        ).model_dump()
+    )
+
+
+@router.post("/auth/onboarding/teacher")
+async def onboarding_teacher(
+    body: OnboardingTeacherRequest,
+    claims: PendingClaims,
+    db: DbSession,
+):
+    telegram_id = int(claims.get("telegram_id") or claims["sub"])
+    username = claims.get("telegram_username")
+
+    existing_student = await db.execute(
+        select(Student).where(Student.telegram_id == telegram_id)
+    )
+    if existing_student.scalar_one_or_none():
+        raise AppError("Bu Telegram akkaunt allaqachon talabaga bog‘langan")
+
+    teacher = await db.get(Teacher, body.teacher_id)
+    if not teacher or not teacher.active:
+        raise AppError("O‘qituvchi topilmadi", status_code=404)
+    if teacher.telegram_id and teacher.telegram_id != telegram_id:
+        raise AppError("Bu o‘qituvchi boshqa Telegram akkauntga bog‘langan")
+
+    teacher.telegram_id = telegram_id
+    teacher.telegram_username = username
+    await db.flush()
+
+    token = create_access_token(str(teacher.id), token_type="teacher")
+    return ok(
+        TokenResponse(
+            access_token=token,
+            role="teacher",
+            needs_onboarding=False,
+            teacher=TeacherOut.model_validate(teacher),
         ).model_dump()
     )
 
@@ -139,6 +269,8 @@ async def admin_login(body: AdminLoginRequest, db: DbSession):
     return ok(
         TokenResponse(
             access_token=token,
+            role="admin",
+            needs_onboarding=False,
             admin=AdminOut.model_validate(admin),
         ).model_dump()
     )
@@ -147,6 +279,11 @@ async def admin_login(body: AdminLoginRequest, db: DbSession):
 @router.get("/auth/me")
 async def auth_me_student(student: CurrentStudent):
     return ok(StudentOut.model_validate(student).model_dump())
+
+
+@router.get("/auth/teacher/me")
+async def auth_me_teacher(teacher: CurrentTeacher):
+    return ok(TeacherOut.model_validate(teacher).model_dump())
 
 
 @router.get("/auth/admin/me")
@@ -579,6 +716,41 @@ async def schedules_week(
         .options(*SCHEDULE_LOAD)
         .where(
             Schedule.group_id == student.group_id,
+            Schedule.date >= start,
+            Schedule.date <= end,
+        )
+        .order_by(Schedule.date, Schedule.start_time)
+    )
+    items = [ScheduleOut.model_validate(x).model_dump() for x in result.scalars()]
+    return ok({"week_start": str(start), "week_end": str(end), "items": items})
+
+
+@router.get("/teacher/schedules/today")
+async def teacher_schedules_today(teacher: CurrentTeacher, db: DbSession):
+    today = date.today()
+    result = await db.execute(
+        select(Schedule)
+        .options(*SCHEDULE_LOAD)
+        .where(Schedule.teacher_id == teacher.id, Schedule.date == today)
+        .order_by(Schedule.start_time)
+    )
+    items = [ScheduleOut.model_validate(x).model_dump() for x in result.scalars()]
+    return ok(items)
+
+
+@router.get("/teacher/schedules/week")
+async def teacher_schedules_week(
+    teacher: CurrentTeacher,
+    db: DbSession,
+    week_start: Optional[date] = None,
+):
+    start = week_start or (date.today() - timedelta(days=date.today().weekday()))
+    end = start + timedelta(days=6)
+    result = await db.execute(
+        select(Schedule)
+        .options(*SCHEDULE_LOAD)
+        .where(
+            Schedule.teacher_id == teacher.id,
             Schedule.date >= start,
             Schedule.date <= end,
         )

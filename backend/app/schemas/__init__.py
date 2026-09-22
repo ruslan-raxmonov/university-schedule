@@ -19,6 +19,20 @@ class TelegramAuthRequest(BaseModel):
     init_data: str
 
 
+class OnboardingStudentRequest(BaseModel):
+    group_id: Optional[int] = None
+
+
+class OnboardingTeacherRequest(BaseModel):
+    teacher_id: int
+
+
+class PendingUserOut(BaseModel):
+    telegram_id: int
+    telegram_username: Optional[str] = None
+    full_name: str
+
+
 class AdminLoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=6)
@@ -60,8 +74,12 @@ class StudentUpdate(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    role: str  # pending | student | teacher | admin
+    needs_onboarding: bool = False
     student: Optional[StudentOut] = None
+    teacher: Optional["TeacherOut"] = None
     admin: Optional[AdminOut] = None
+    pending: Optional[PendingUserOut] = None
 
 
 # --- Academic ---
@@ -144,6 +162,8 @@ class TeacherUpdate(BaseModel):
 
 class TeacherOut(ORMModel):
     id: int
+    telegram_id: Optional[int] = None
+    telegram_username: Optional[str] = None
     full_name: str
     short_name: Optional[str] = None
     email: Optional[str] = None
@@ -365,3 +385,4 @@ class ImportPreviewResult(BaseModel):
 
 StudentOut.model_rebuild()
 ScheduleOut.model_rebuild()
+TokenResponse.model_rebuild()

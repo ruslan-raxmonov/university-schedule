@@ -11,10 +11,21 @@ from sqlalchemy.orm import selectinload
 from app.core.database import get_db
 from app.core.responses import AppError
 from app.core.security import decode_access_token
-from app.models import AdminRole, AdminUser, Group, Student
+from app.models import AdminRole, AdminUser, Group, Student, Teacher
 
 bearer = HTTPBearer(auto_error=False)
 DbSession = Annotated[AsyncSession, Depends(get_db)]
+
+
+def _extract_token(
+    credentials: Optional[HTTPAuthorizationCredentials],
+    authorization: Optional[str],
+) -> str:
+    if credentials and credentials.credentials:
+        return credentials.credentials
+    if authorization and authorization.lower().startswith("bearer "):
+        return authorization.split(" ", 1)[1].strip()
+    raise AppError("Not authenticated", status_code=401)
 
 
 async def get_current_student(
@@ -36,6 +47,36 @@ async def get_current_student(
     if not student:
         raise AppError("Student not found", status_code=401)
     return student
+
+
+async def get_current_teacher(
+    db: DbSession,
+    credentials: Annotated[Optional[HTTPAuthorizationCredentials], Depends(bearer)] = None,
+    authorization: Annotated[Optional[str], Header()] = None,
+) -> Teacher:
+    token = _extract_token(credentials, authorization)
+    payload = decode_access_token(token)
+    if payload.get("type") != "teacher":
+        raise AppError("Teacher authentication required", status_code=401)
+    teacher_id = int(payload["sub"])
+    result = await db.execute(
+        select(Teacher).where(Teacher.id == teacher_id, Teacher.active.is_(True))
+    )
+    teacher = result.scalar_one_or_none()
+    if not teacher:
+        raise AppError("Teacher not found", status_code=401)
+    return teacher
+
+
+async def get_pending_claims(
+    credentials: Annotated[Optional[HTTPAuthorizationCredentials], Depends(bearer)] = None,
+    authorization: Annotated[Optional[str], Header()] = None,
+) -> dict:
+    token = _extract_token(credentials, authorization)
+    payload = decode_access_token(token)
+    if payload.get("type") != "pending":
+        raise AppError("Onboarding session required", status_code=401)
+    return payload
 
 
 async def get_current_admin(
@@ -88,15 +129,6 @@ CanViewAdmin = Annotated[
     ),
 ]
 CurrentStudent = Annotated[Student, Depends(get_current_student)]
+CurrentTeacher = Annotated[Teacher, Depends(get_current_teacher)]
+PendingClaims = Annotated[dict, Depends(get_pending_claims)]
 CurrentAdmin = Annotated[AdminUser, Depends(get_current_admin)]
-
-
-def _extract_token(
-    credentials: Optional[HTTPAuthorizationCredentials],
-    authorization: Optional[str],
-) -> str:
-    if credentials and credentials.credentials:
-        return credentials.credentials
-    if authorization and authorization.lower().startswith("bearer "):
-        return authorization.split(" ", 1)[1].strip()
-    raise AppError("Not authenticated", status_code=401)

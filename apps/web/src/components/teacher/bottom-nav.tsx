@@ -2,41 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Bell,
-  CalendarDays,
-  Home,
-  Search,
-  UserRound,
-} from "lucide-react";
+import { CalendarDays, Home, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
-  { href: "/", label: "Bosh", icon: Home },
-  { href: "/schedule", label: "Jadval", icon: CalendarDays },
-  { href: "/search", label: "Qidiruv", icon: Search },
-  { href: "/notifications", label: "Yangilik", icon: Bell },
-  { href: "/profile", label: "Profil", icon: UserRound },
+  { href: "/teacher", label: "Bugun", icon: Home },
+  { href: "/teacher/schedule", label: "Jadval", icon: CalendarDays },
+  { href: "/teacher/profile", label: "Profil", icon: UserRound },
 ];
 
-export function StudentBottomNav() {
+export function TeacherBottomNav() {
   const pathname = usePathname();
-
-  if (
-    pathname.startsWith("/onboarding") ||
-    pathname.startsWith("/admin") ||
-    pathname.startsWith("/teacher")
-  ) {
-    return null;
-  }
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--line)] bg-[color-mix(in_oklab,var(--card)_92%,transparent)] backdrop-blur-xl">
       <ul className="mx-auto flex max-w-lg items-stretch justify-between px-1 pb-[env(safe-area-inset-bottom)]">
         {items.map((item) => {
           const active =
-            item.href === "/"
-              ? pathname === "/"
+            item.href === "/teacher"
+              ? pathname === "/teacher"
               : pathname.startsWith(item.href);
           const Icon = item.icon;
           return (

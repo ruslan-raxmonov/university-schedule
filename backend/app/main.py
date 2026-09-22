@@ -9,12 +9,14 @@ from fastapi.exceptions import HTTPException
 from app.api.v1.router import router as v1_router
 from app.core.config import get_settings
 from app.core.responses import AppError, app_error_handler, http_exception_handler, unhandled_exception_handler
+from app.scripts.ensure_schema import ensure_schema
 
 settings = get_settings()
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    await ensure_schema()
     yield
 
 

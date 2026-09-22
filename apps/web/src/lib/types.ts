@@ -87,6 +87,8 @@ export type Admin = {
 
 export type Teacher = {
   id: number;
+  telegram_id?: number | null;
+  telegram_username?: string | null;
   full_name: string;
   short_name?: string | null;
   email?: string | null;
@@ -95,6 +97,25 @@ export type Teacher = {
   active: boolean;
   created_at: string;
   updated_at: string;
+};
+
+export type PendingUser = {
+  telegram_id: number;
+  telegram_username?: string | null;
+  full_name: string;
+};
+
+export type AppRole = "pending" | "student" | "teacher" | "admin";
+
+export type TokenResponse = {
+  access_token: string;
+  token_type: string;
+  role: AppRole;
+  needs_onboarding: boolean;
+  student?: Student | null;
+  teacher?: Teacher | null;
+  admin?: Admin | null;
+  pending?: PendingUser | null;
 };
 
 export type Subject = {
@@ -161,13 +182,6 @@ export type Notification = {
   delivery_status: string;
   sent_at?: string | null;
   created_at: string;
-};
-
-export type TokenResponse = {
-  access_token: string;
-  token_type: string;
-  student?: Student | null;
-  admin?: Admin | null;
 };
 
 export type DashboardStats = {

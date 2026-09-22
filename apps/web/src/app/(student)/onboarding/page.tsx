@@ -1,72 +1,26 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
-import type { Faculty, Group, Paginated, Student } from "@/lib/types";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { GraduationCap, UserRound } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
-import {
-  EmptyState,
-  ErrorState,
-  LoadingCards,
-} from "@/components/shared/query-state";
-import { toast } from "sonner";
-import { useStudentAuth } from "@/hooks/use-student-auth";
+import { useAppAuth } from "@/hooks/use-app-auth";
 
-export default function OnboardingPage() {
+export default function OnboardingRolePage() {
   const router = useRouter();
-  const { refresh } = useStudentAuth();
-  const queryClient = useQueryClient();
-  const [q, setQ] = useState("");
-  const [facultyId, setFacultyId] = useState<number | null>(null);
+  const { role } = useAppAuth();
 
-  const facultiesQuery = useQuery({
-    queryKey: ["faculties"],
-    queryFn: () =>
-      api.get<Paginated<Faculty>>("/api/v1/faculties", {
-        auth: "student",
-        query: { page_size: 100 },
-      }),
-  });
-
-  const groupsQuery = useQuery({
-    queryKey: ["groups", facultyId, q],
-    queryFn: () =>
-      api.get<Paginated<Group>>("/api/v1/groups", {
-        auth: "student",
-        query: {
-          page_size: 200,
-          active: true,
-          faculty_id: facultyId || undefined,
-          q: q || undefined,
-        },
-      }),
-  });
-
-  const selectGroup = useMutation({
-    mutationFn: (group_id: number) =>
-      api.patch<Student>(
-        "/api/v1/students/me",
-        { group_id },
-        { auth: "student" },
-      ),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["student-me"] });
-      await refresh();
-      toast.success("Guruh saqlandi");
-      router.replace("/");
-    },
-    onError: (err: Error) => toast.error(err.message),
-  });
-
-  const groups = useMemo(() => groupsQuery.data?.items || [], [groupsQuery.data]);
+  if (role === "teacher") {
+    router.replace("/teacher");
+    return null;
+  }
+  if (role === "student") {
+    router.replace("/onboarding/student");
+    return null;
+  }
 
   return (
-    <div className="space-y-6 pb-8">
-      <header className="animate-rise space-y-4 pt-2 text-center">
+    <div className="space-y-8 pb-8 pt-2">
+      <header className="animate-rise space-y-4 text-center">
         <div className="flex justify-center">
           <BrandLogo size={72} priority className="justify-center" />
         </div>
@@ -74,77 +28,51 @@ export default function OnboardingPage() {
           Renessans Ta’lim
         </p>
         <h1 className="font-display text-3xl font-bold tracking-tight text-[var(--ink)]">
-          Dars jadvalingiz
+          Kim sifatida kirasiz?
         </h1>
         <p className="mx-auto max-w-xs text-sm leading-relaxed text-[var(--stone)]">
-          Jadvalni ko‘rish uchun guruhingizni tanlang.
+          Talaba yoki ustoz kabinetini tanlang. Keyinroq profil orqali
+          o‘zgartirish mumkin emas — yangi Telegram bilan qayta bog‘lang.
         </p>
         <div className="mx-auto reveal-line" />
       </header>
 
-      <Input
-        placeholder="Guruhni qidirish (CS-24-01...)"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        className="h-12 border-[var(--line)] bg-white/80"
-      />
-
-      <div className="flex flex-wrap gap-2">
-        <Button
-          size="sm"
-          variant={facultyId === null ? "default" : "outline"}
-          onClick={() => setFacultyId(null)}
+      <div className="animate-rise-delay space-y-3">
+        <button
+          type="button"
+          onClick={() => router.push("/onboarding/student")}
+          className="brand-rail flex w-full items-center gap-4 rounded-xl border border-[var(--line)] bg-[var(--card)] p-5 text-left transition hover:border-[var(--gold)]"
         >
-          Barchasi
-        </Button>
-        {facultiesQuery.data?.items.map((f) => (
-          <Button
-            key={f.id}
-            size="sm"
-            variant={facultyId === f.id ? "secondary" : "outline"}
-            onClick={() => setFacultyId(f.id)}
-          >
-            {f.code}
-          </Button>
-        ))}
-      </div>
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--mist)] text-[var(--maroon)]">
+            <UserRound className="h-6 w-6" />
+          </span>
+          <span>
+            <span className="block font-display text-lg font-bold text-[var(--ink)]">
+              Talaba
+            </span>
+            <span className="text-sm text-[var(--stone)]">
+              Guruh jadvali, qidiruv, bildirishnomalar
+            </span>
+          </span>
+        </button>
 
-      {groupsQuery.isLoading ? <LoadingCards /> : null}
-      {groupsQuery.isError ? (
-        <ErrorState
-          message={
-            groupsQuery.error instanceof Error
-              ? groupsQuery.error.message
-              : undefined
-          }
-          onRetry={() => groupsQuery.refetch()}
-        />
-      ) : null}
-      {!groupsQuery.isLoading && groups.length === 0 ? (
-        <EmptyState title="Guruh topilmadi" />
-      ) : null}
-
-      <div className="space-y-2">
-        {groups.map((g) => (
-          <div
-            key={g.id}
-            className="brand-rail flex items-center justify-between gap-3 rounded-xl border border-[var(--line)] bg-[var(--card)] p-4"
-          >
-            <div>
-              <p className="font-display font-bold text-[var(--ink)]">{g.code}</p>
-              <p className="text-sm text-[var(--stone)]">
-                {g.faculty?.name || g.name} · {g.year}-kurs
-              </p>
-            </div>
-            <Button
-              size="sm"
-              disabled={selectGroup.isPending}
-              onClick={() => selectGroup.mutate(g.id)}
-            >
-              Tanlash
-            </Button>
-          </div>
-        ))}
+        <button
+          type="button"
+          onClick={() => router.push("/onboarding/teacher")}
+          className="brand-rail-maroon flex w-full items-center gap-4 rounded-xl border border-[var(--line)] bg-[var(--card)] p-5 text-left transition hover:border-[var(--maroon)]"
+        >
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--mist)] text-[var(--navy)]">
+            <GraduationCap className="h-6 w-6" />
+          </span>
+          <span>
+            <span className="block font-display text-lg font-bold text-[var(--ink)]">
+              Ustoz
+            </span>
+            <span className="text-sm text-[var(--stone)]">
+              Shaxsiy dars jadvali va guruhlar
+            </span>
+          </span>
+        </button>
       </div>
     </div>
   );

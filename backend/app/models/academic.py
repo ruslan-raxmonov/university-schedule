@@ -73,6 +73,10 @@ class Teacher(Base):
     __tablename__ = "teachers"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    telegram_id: Mapped[Optional[int]] = mapped_column(
+        BigInteger, unique=True, nullable=True, index=True
+    )
+    telegram_username: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     short_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
