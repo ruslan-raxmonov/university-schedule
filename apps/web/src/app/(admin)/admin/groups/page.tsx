@@ -34,7 +34,7 @@ export default function GroupsPage() {
   });
   const listQuery = useQuery({
     queryKey: ["admin-groups", q],
-    queryFn: () => api.get<Paginated<Group>>("/api/v1/groups", { auth: "admin", query: { q: q || undefined, page_size: 200, active: null } }),
+    queryFn: () => api.get<Paginated<Group>>("/api/v1/groups", { auth: "admin", query: { q: q || undefined, page_size: 200, active: true } }),
   });
 
   const save = useMutation({

@@ -4,6 +4,9 @@
 .env.*.local
 !.env.example
 
+# Local analysis artifacts
+graphify-out/
+
 # Python
 __pycache__/
 *.py[cod]
