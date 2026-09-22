@@ -1,11 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Manrope, Syne } from "next/font/google";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin", "latin-ext", "cyrillic"],
+  weight: ["400", "500", "600", "700", "800"],
+});
+
+const syne = Syne({
+  variable: "--font-syne",
   subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
 });
 
 const geistMono = Geist_Mono({
@@ -13,15 +20,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
 export const metadata: Metadata = {
-  title: "University Digital Schedule",
-  description: "Telegram Mini App va Admin panel — universitet dars jadvali",
+  title: "Renessans | Jadval",
+  description: "Renessans Ta’lim Universiteti — dars jadvali Mini App va admin panel",
+  icons: {
+    icon: "/renessans-logo.svg",
+    apple: "/logo.png",
+  },
 };
 
 export const viewport: Viewport = {
@@ -29,8 +34,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f7f5" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+    { media: "(prefers-color-scheme: light)", color: "#083153" },
+    { media: "(prefers-color-scheme: dark)", color: "#081018" },
   ],
 };
 
@@ -42,7 +47,7 @@ export default function RootLayout({
   return (
     <html lang="uz" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${dmSans.variable} min-h-dvh antialiased`}
+        className={`${manrope.variable} ${syne.variable} ${geistMono.variable} min-h-dvh antialiased`}
       >
         <Providers>{children}</Providers>
       </body>

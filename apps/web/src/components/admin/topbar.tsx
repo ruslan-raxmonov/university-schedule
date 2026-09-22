@@ -21,15 +21,19 @@ export function AdminTopbar({
   });
 
   return (
-    <header className="flex flex-col gap-3 border-b border-neutral-200 bg-white/80 px-4 py-4 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/80 sm:flex-row sm:items-center sm:justify-between lg:px-8">
+    <header className="flex flex-col gap-3 border-b border-[var(--line)] bg-white/80 px-4 py-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between lg:px-8">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
-        <p className="text-sm text-neutral-500">University Digital Schedule</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--maroon)]">
+          Renessans Admin
+        </p>
+        <h1 className="font-display text-xl font-bold tracking-tight text-[var(--ink)]">
+          {title}
+        </h1>
       </div>
       <div className="flex items-center gap-3">
         {onSearch ? (
           <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--stone)]" />
             <Input
               className="pl-9"
               placeholder="Qidirish..."
@@ -38,8 +42,8 @@ export function AdminTopbar({
           </div>
         ) : null}
         <div className="flex items-center gap-2">
-          <Avatar className="h-9 w-9">
-            <AvatarFallback>
+          <Avatar className="h-9 w-9 ring-2 ring-[var(--gold)]/40">
+            <AvatarFallback className="bg-[var(--mist)] text-[var(--navy)]">
               {(admin?.full_name || "A")
                 .split(" ")
                 .map((p) => p[0])
@@ -49,8 +53,10 @@ export function AdminTopbar({
             </AvatarFallback>
           </Avatar>
           <div className="hidden sm:block">
-            <p className="text-sm font-medium">{admin?.full_name || "Admin"}</p>
-            <p className="text-xs text-neutral-500">{admin?.role || "—"}</p>
+            <p className="text-sm font-semibold text-[var(--ink)]">
+              {admin?.full_name || "Admin"}
+            </p>
+            <p className="text-xs text-[var(--stone)]">{admin?.role || "—"}</p>
           </div>
         </div>
       </div>

@@ -4,28 +4,28 @@ import { Slot } from "@radix-ui/react-slot";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold tracking-tight transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default:
-          "bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white",
+          "bg-[var(--maroon)] text-white hover:bg-[var(--maroon-soft)]",
         secondary:
-          "bg-neutral-100 text-neutral-900 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700",
+          "bg-[var(--ink)] text-[#f7f8fa] hover:bg-[var(--ink-soft)]",
         outline:
-          "border border-neutral-200 bg-transparent hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-900",
-        ghost: "hover:bg-neutral-100 dark:hover:bg-neutral-800",
+          "border border-[var(--line)] bg-transparent text-[var(--ink)] hover:bg-white/70 dark:hover:bg-white/5",
+        ghost: "text-[var(--ink)] hover:bg-[var(--mist)]",
         destructive:
-          "bg-red-600 text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600",
-        success:
-          "bg-emerald-600 text-white hover:bg-emerald-700",
-        link: "text-neutral-900 underline-offset-4 hover:underline dark:text-neutral-100",
+          "bg-[var(--error)] text-white hover:opacity-90",
+        success: "bg-[var(--success)] text-white hover:opacity-90",
+        gold: "bg-[var(--gold)] text-[var(--navy)] hover:bg-[var(--gold-soft)]",
+        link: "text-[var(--maroon)] underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-8 rounded-lg px-3 text-xs",
-        lg: "h-11 rounded-xl px-6",
-        icon: "h-10 w-10",
+        default: "h-11 min-h-11 px-4 py-2",
+        sm: "h-9 rounded-md px-3 text-xs",
+        lg: "h-12 rounded-md px-6 text-base",
+        icon: "h-11 w-11",
       },
     },
     defaultVariants: {

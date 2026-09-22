@@ -32,10 +32,13 @@ export default function ProfilePage() {
   return (
     <div className="space-y-5">
       <header>
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--maroon)]">
+          Hisob
+        </p>
+        <h1 className="font-display text-2xl font-bold tracking-tight text-[var(--ink)]">
           Profil
         </h1>
-        <p className="text-sm text-neutral-500">Shaxsiy ma’lumotlar</p>
+        <p className="text-sm text-[var(--stone)]">Shaxsiy ma’lumotlar</p>
       </header>
 
       <Card>

@@ -48,10 +48,13 @@ export default function NotificationsPage() {
     <div className="space-y-5">
       <header className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--maroon)]">
             Bildirishnomalar
+          </p>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-[var(--ink)]">
+            Yangiliklar
           </h1>
-          <p className="text-sm text-neutral-500">Jadval o‘zgarishlari</p>
+          <p className="text-sm text-[var(--stone)]">Jadval o‘zgarishlari</p>
         </div>
         <Button
           variant="outline"

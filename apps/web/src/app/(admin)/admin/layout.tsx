@@ -1,8 +1,8 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { AdminGuard } from "@/hooks/use-admin-auth";
 import { AdminSidebar } from "@/components/admin/sidebar";
+import { usePathname } from "next/navigation";
 
 export default function AdminRootLayout({
   children,
@@ -15,13 +15,13 @@ export default function AdminRootLayout({
   return (
     <AdminGuard>
       {isLogin ? (
-        <div className="min-h-dvh bg-neutral-50 dark:bg-neutral-950">
-          {children}
-        </div>
+        <div className="min-h-dvh">{children}</div>
       ) : (
-        <div className="flex min-h-dvh bg-neutral-50 dark:bg-neutral-950">
+        <div className="atmosphere flex min-h-dvh">
           <AdminSidebar />
-          <div className="flex min-w-0 flex-1 flex-col">{children}</div>
+          <div className="flex min-w-0 flex-1 flex-col bg-[var(--paper)]/80">
+            {children}
+          </div>
         </div>
       )}
     </AdminGuard>

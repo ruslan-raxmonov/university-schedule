@@ -3,22 +3,25 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors",
+  "inline-flex items-center rounded-sm border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide transition-colors",
   {
     variants: {
       variant: {
         default:
-          "border-transparent bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900",
+          "border-transparent bg-[var(--ink)] text-white",
         secondary:
-          "border-transparent bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200",
-        outline: "border-neutral-200 text-neutral-700 dark:border-neutral-700 dark:text-neutral-200",
+          "border-transparent bg-[var(--mist)] text-[var(--ink-soft)]",
+        outline: "border-[var(--line)] text-[var(--stone)]",
         success:
-          "border-transparent bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
+          "border-transparent bg-teal-50 text-[var(--success)]",
         warning:
-          "border-transparent bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
+          "border-transparent bg-amber-50 text-[var(--warning)]",
         destructive:
-          "border-transparent bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300",
-        info: "border-transparent bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300",
+          "border-transparent bg-red-50 text-[var(--error)]",
+        info: "border-transparent bg-[color-mix(in_oklab,var(--navy)_10%,white)] text-[var(--navy)]",
+        gold: "border-transparent bg-[color-mix(in_oklab,var(--gold)_28%,white)] text-[var(--navy)]",
+        maroon:
+          "border-transparent bg-[color-mix(in_oklab,var(--maroon)_12%,white)] text-[var(--maroon)]",
       },
     },
     defaultVariants: {

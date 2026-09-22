@@ -37,10 +37,13 @@ export default function SearchPage() {
   return (
     <div className="space-y-5">
       <header>
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
-          Qidirish
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--maroon)]">
+          Qidiruv
+        </p>
+        <h1 className="font-display text-2xl font-bold tracking-tight text-[var(--ink)]">
+          Topish
         </h1>
-        <p className="text-sm text-neutral-500">Fan, o‘qituvchi yoki xona</p>
+        <p className="text-sm text-[var(--stone)]">Fan, o‘qituvchi yoki xona</p>
       </header>
 
       <Input

@@ -7,7 +7,7 @@ import { api } from "@/lib/api";
 import type { Faculty, Group, Paginated, Student } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { BrandLogo } from "@/components/brand-logo";
 import {
   EmptyState,
   ErrorState,
@@ -66,20 +66,27 @@ export default function OnboardingPage() {
 
   return (
     <div className="space-y-6 pb-8">
-      <header className="space-y-2 pt-4 text-center">
-        <p className="text-3xl">🎓</p>
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
+      <header className="animate-rise space-y-4 pt-2 text-center">
+        <div className="flex justify-center">
+          <BrandLogo size={72} priority className="justify-center" />
+        </div>
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--maroon)]">
+          Renessans Ta’lim
+        </p>
+        <h1 className="font-display text-3xl font-bold tracking-tight text-[var(--ink)]">
           Dars jadvalingiz
         </h1>
-        <p className="text-sm text-neutral-500">
+        <p className="mx-auto max-w-xs text-sm leading-relaxed text-[var(--stone)]">
           Jadvalni ko‘rish uchun guruhingizni tanlang.
         </p>
+        <div className="mx-auto reveal-line" />
       </header>
 
       <Input
         placeholder="Guruhni qidirish (CS-24-01...)"
         value={q}
         onChange={(e) => setQ(e.target.value)}
+        className="h-12 border-[var(--line)] bg-white/80"
       />
 
       <div className="flex flex-wrap gap-2">
@@ -94,7 +101,7 @@ export default function OnboardingPage() {
           <Button
             key={f.id}
             size="sm"
-            variant={facultyId === f.id ? "default" : "outline"}
+            variant={facultyId === f.id ? "secondary" : "outline"}
             onClick={() => setFacultyId(f.id)}
           >
             {f.code}
@@ -119,23 +126,24 @@ export default function OnboardingPage() {
 
       <div className="space-y-2">
         {groups.map((g) => (
-          <Card key={g.id} className="p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="font-semibold">{g.code}</p>
-                <p className="text-sm text-neutral-500">
-                  {g.faculty?.name || g.name} · {g.year}-kurs
-                </p>
-              </div>
-              <Button
-                size="sm"
-                disabled={selectGroup.isPending}
-                onClick={() => selectGroup.mutate(g.id)}
-              >
-                Tanlash
-              </Button>
+          <div
+            key={g.id}
+            className="brand-rail flex items-center justify-between gap-3 rounded-xl border border-[var(--line)] bg-[var(--card)] p-4"
+          >
+            <div>
+              <p className="font-display font-bold text-[var(--ink)]">{g.code}</p>
+              <p className="text-sm text-[var(--stone)]">
+                {g.faculty?.name || g.name} · {g.year}-kurs
+              </p>
             </div>
-          </Card>
+            <Button
+              size="sm"
+              disabled={selectGroup.isPending}
+              onClick={() => selectGroup.mutate(g.id)}
+            >
+              Tanlash
+            </Button>
+          </div>
         ))}
       </div>
     </div>

@@ -82,7 +82,7 @@ export default function AdminDashboardPage() {
                     <XAxis dataKey="name" tickLine={false} axisLine={false} />
                     <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
                     <Tooltip />
-                    <Bar dataKey="value" fill="#171717" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="value" fill="#7a1515" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -154,12 +154,14 @@ function StatCard({
   tone?: "warning";
 }) {
   return (
-    <Card>
+    <Card className="brand-rail overflow-hidden">
       <CardContent className="p-5">
-        <p className="text-sm text-neutral-500">{label}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--stone)]">
+          {label}
+        </p>
         <p
-          className={`mt-2 text-3xl font-semibold tracking-tight ${
-            tone === "warning" ? "text-amber-600" : ""
+          className={`mt-2 font-display text-3xl font-bold tracking-tight ${
+            tone === "warning" ? "text-[var(--warning)]" : "text-[var(--ink)]"
           }`}
         >
           {value}

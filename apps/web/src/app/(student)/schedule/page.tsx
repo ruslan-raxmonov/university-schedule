@@ -54,10 +54,13 @@ export default function SchedulePage() {
     <div className="space-y-5">
       <header className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight">
-            Haftalik jadval
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--maroon)]">
+            Haftalik
+          </p>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-[var(--ink)]">
+            Jadval
           </h1>
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-[var(--stone)]">
             {weekQuery.data
               ? `${weekQuery.data.week_start} — ${weekQuery.data.week_end}`
               : "—"}
@@ -101,16 +104,20 @@ export default function SchedulePage() {
 
       {weekQuery.data ? (
         <Tabs defaultValue={defaultDay}>
-          <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1">
+          <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 bg-[var(--mist)] p-1">
             {days.map((day, idx) => (
-              <TabsTrigger key={day} value={day} className="flex-1 text-xs">
+              <TabsTrigger
+                key={day}
+                value={day}
+                className="flex-1 text-xs data-[state=active]:bg-[var(--ink)] data-[state=active]:text-white"
+              >
                 {WEEKDAY_SHORT[idx].slice(0, 3)}
               </TabsTrigger>
             ))}
           </TabsList>
           {days.map((day, idx) => (
             <TabsContent key={day} value={day} className="space-y-3">
-              <p className="text-sm font-medium text-neutral-500">
+              <p className="text-sm font-medium text-[var(--stone)]">
                 {WEEKDAY_SHORT[idx]}, {day}
               </p>
               {byDay[day].length === 0 ? (

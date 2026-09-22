@@ -12,11 +12,11 @@ import {
 import { cn } from "@/lib/utils";
 
 const items = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/schedule", label: "Schedule", icon: CalendarDays },
-  { href: "/search", label: "Search", icon: Search },
-  { href: "/notifications", label: "Notifications", icon: Bell },
-  { href: "/profile", label: "Profile", icon: UserRound },
+  { href: "/", label: "Bosh", icon: Home },
+  { href: "/schedule", label: "Jadval", icon: CalendarDays },
+  { href: "/search", label: "Qidiruv", icon: Search },
+  { href: "/notifications", label: "Yangilik", icon: Bell },
+  { href: "/profile", label: "Profil", icon: UserRound },
 ];
 
 export function StudentBottomNav() {
@@ -27,8 +27,8 @@ export function StudentBottomNav() {
   }
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-neutral-200/80 bg-[var(--tg-bg,#ffffff)]/95 backdrop-blur-md dark:border-neutral-800 dark:bg-[var(--tg-bg,#0a0a0a)]/95">
-      <ul className="mx-auto flex max-w-lg items-stretch justify-between px-2 pb-[env(safe-area-inset-bottom)]">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--line)] bg-[color-mix(in_oklab,var(--card)_92%,transparent)] backdrop-blur-xl">
+      <ul className="mx-auto flex max-w-lg items-stretch justify-between px-1 pb-[env(safe-area-inset-bottom)]">
         {items.map((item) => {
           const active =
             item.href === "/"
@@ -40,13 +40,14 @@ export function StudentBottomNav() {
               <Link
                 href={item.href}
                 className={cn(
-                  "flex min-h-14 flex-col items-center justify-center gap-1 text-[11px] font-medium",
-                  active
-                    ? "text-neutral-900 dark:text-white"
-                    : "text-neutral-400",
+                  "relative flex min-h-14 flex-col items-center justify-center gap-0.5 text-[10px] font-semibold uppercase tracking-wide",
+                  active ? "text-[var(--maroon)]" : "text-[var(--stone)]",
                 )}
               >
-                <Icon className="h-5 w-5" />
+                {active ? (
+                  <span className="absolute top-0 h-0.5 w-8 rounded-full bg-[var(--gold)]" />
+                ) : null}
+                <Icon className={cn("h-5 w-5", active && "stroke-[2.25]")} />
                 <span>{item.label}</span>
               </Link>
             </li>

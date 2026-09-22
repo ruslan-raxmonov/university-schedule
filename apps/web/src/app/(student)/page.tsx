@@ -51,18 +51,31 @@ export default function StudentHomePage() {
 
   return (
     <div className="space-y-6">
-      <header className="space-y-1">
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
-          Salom, {firstName(student?.full_name || "talaba")} 👋
-        </h1>
-        <p className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
-          {student?.group?.code || "Guruh tanlanmagan"}
+      <header className="animate-rise space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--maroon)]">
+          Renessans · Jadval
         </p>
-        <p className="text-sm capitalize text-neutral-500">{todayLabel}</p>
+        <h1 className="font-display text-[1.75rem] font-bold leading-tight tracking-tight text-[var(--ink)]">
+          Salom, {firstName(student?.full_name || "talaba")}
+        </h1>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="maroon">{student?.group?.code || "Guruh tanlanmagan"}</Badge>
+          <span className="text-sm capitalize text-[var(--stone)]">{todayLabel}</span>
+        </div>
       </header>
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold tracking-tight">Bugungi darslar</h2>
+      <section className="animate-rise-delay space-y-3">
+        <div className="flex items-end justify-between gap-3">
+          <div>
+            <div className="reveal-line mb-2" />
+            <h2 className="font-display text-lg font-bold tracking-tight">
+              Bugungi darslar
+            </h2>
+          </div>
+          <p className="text-xs font-medium text-[var(--stone)]">
+            {todayQuery.data?.length ?? 0} ta
+          </p>
+        </div>
 
         {todayQuery.isLoading ? <LoadingCards /> : null}
         {todayQuery.isError ? (
@@ -76,49 +89,59 @@ export default function StudentHomePage() {
           />
         ) : null}
         {todayQuery.data && todayQuery.data.length === 0 ? (
-          <EmptyState title="Bugun dars yo‘q 🎉" />
-        ) : null}
-        {todayQuery.data?.map((lesson) => (
-          <LessonCard
-            key={lesson.id}
-            lesson={lesson}
-            isNow={isCurrentLesson(lesson)}
-            onClick={() => setSelected(lesson)}
+          <EmptyState
+            title="Bugun dars yo‘q"
+            description="Dam oling yoki haftalik jadvalni tekshiring."
           />
-        ))}
+        ) : null}
+        <div className="space-y-3">
+          {todayQuery.data?.map((lesson) => (
+            <LessonCard
+              key={lesson.id}
+              lesson={lesson}
+              isNow={isCurrentLesson(lesson)}
+              onClick={() => setSelected(lesson)}
+            />
+          ))}
+        </div>
       </section>
 
       <Dialog open={Boolean(selected)} onOpenChange={() => setSelected(null)}>
-        <DialogContent>
+        <DialogContent className="border-[var(--line)] bg-[var(--card)]">
           <DialogHeader>
-            <DialogTitle>{selected?.subject?.name}</DialogTitle>
+            <DialogTitle className="font-display text-xl text-[var(--ink)]">
+              {selected?.subject?.name}
+            </DialogTitle>
           </DialogHeader>
           {selected ? (
-            <div className="space-y-2 text-sm">
+            <div className="space-y-3 text-sm">
+              <div className="reveal-line" />
               <p>
-                <span className="text-neutral-500">O‘qituvchi:</span>{" "}
-                {selected.teacher?.full_name}
+                <span className="text-[var(--stone)]">O‘qituvchi</span>
+                <br />
+                <span className="font-medium text-[var(--ink)]">
+                  {selected.teacher?.full_name}
+                </span>
               </p>
               <p>
-                <span className="text-neutral-500">Xona:</span>{" "}
-                {roomLabel(selected.room?.building, selected.room?.room_number)}
+                <span className="text-[var(--stone)]">Xona</span>
+                <br />
+                <span className="font-medium">
+                  {roomLabel(selected.room?.building, selected.room?.room_number)}
+                </span>
               </p>
               <p>
-                <span className="text-neutral-500">Sana:</span> {selected.date}
+                <span className="text-[var(--stone)]">Vaqt</span>
+                <br />
+                <span className="font-mono font-semibold text-[var(--maroon)]">
+                  {formatTime(selected.start_time)} — {formatTime(selected.end_time)}
+                </span>
               </p>
-              <p>
-                <span className="text-neutral-500">Vaqt:</span>{" "}
-                {formatTime(selected.start_time)} — {formatTime(selected.end_time)}
-              </p>
-              <p>
-                <span className="text-neutral-500">Guruh:</span>{" "}
-                {selected.group?.code}
-              </p>
-              <Badge variant="secondary">
+              <Badge variant="gold">
                 {LESSON_TYPE_LABEL[selected.lesson_type]}
               </Badge>
               {selected.notes ? (
-                <p className="rounded-xl bg-neutral-50 p-3 dark:bg-neutral-900">
+                <p className="rounded-lg bg-[var(--mist)] p-3 text-[var(--ink-soft)]">
                   {selected.notes}
                 </p>
               ) : null}
